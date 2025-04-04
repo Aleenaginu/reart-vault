@@ -53,7 +53,6 @@ INSTALLED_APPS = [
     'category',
     'cart',
     'delivery',
-    'face_auth',
 ]
 
 MIDDLEWARE = [
