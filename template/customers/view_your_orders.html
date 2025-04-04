@@ -1,0 +1,479 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zxx">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="Ashion Template">
+    <meta name="keywords" content="Ashion, unica, creative, html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Your Orders | ReArt</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Cookie&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Css Styles -->
+    <link rel="stylesheet" href="{% static "shop/css/bootstrap.min.css" %}" type="text/css">
+    <link rel="stylesheet" href="{% static "shop/css/font-awesome.min.css" %}" type="text/css">
+    <link rel="stylesheet" href="{% static "shop/css/elegant-icons.css" %}" type="text/css">
+    <link rel="stylesheet" href="{% static "shop/css/jquery-ui.min.css" %}" type="text/css">
+    <link rel="stylesheet" href="{% static "shop/css/magnific-popup.css" %}" type="text/css">
+    <link rel="stylesheet" href="{% static "shop/css/owl.carousel.min.css" %}" type="text/css">
+    <link rel="stylesheet" href="{% static "shop/css/slicknav.min.css" %}" type="text/css">
+    <link rel="stylesheet" href="{% static "shop/css/style.css" %}" type="text/css">
+    <!-- AOS CSS for animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <style>
+        .orders-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: calc(100vh - 200px);
+        }
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            margin: 15px auto;
+            border-radius: 2px;
+        }
+        .order-card {
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .order-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        .order-header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: #fff;
+            padding: 20px;
+            position: relative;
+        }
+        .order-header h3 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        .order-body {
+            padding: 25px;
+        }
+        .order-items {
+            margin-top: 20px;
+        }
+        .item-row {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s ease;
+        }
+        .item-row:hover {
+            background-color: #f8f9fa;
+        }
+        .item-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-right: 20px;
+            border: 1px solid #eee;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .item-image:hover img {
+            transform: scale(1.1);
+        }
+        .debug-info {
+            display: none;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px;
+            font-size: 10px;
+        }
+        .item-details {
+            flex: 1;
+        }
+        .item-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .item-price {
+            color: #2ecc71;
+            font-weight: 600;
+        }
+        .order-footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+        .status-badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .status-completed {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .empty-orders {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        .empty-orders i {
+            font-size: 5rem;
+            color: #bdc3c7;
+            margin-bottom: 20px;
+        }
+        .empty-orders h3 {
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        .order-date {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        .total-amount {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        /* Loading animation */
+        .loading-spinner {
+            display: none;
+            margin: 20px auto;
+            width: 50px;
+            height: 50px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Page Preloder -->
+    <div id="preloder">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Header Section Begin -->
+    <header class="header">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-xl-3 col-lg-2">
+                    <div class="header__logo">
+                        <a href="./index.html"><img src="img/logo.png" alt=""></a>
+                    </div>
+                </div>
+                <div class="col-xl-6 col-lg-7">
+                    <nav class="header__menu">
+                        <ul>
+                            <li class="active"><a href="{% url 'shop_index' %}">Home</a></li>
+                            {% if user.is_authenticated and request.user.customers %}
+                            <li><a href="{% url 'shop_index' %}">Shop</a></li>
+                            <li><a href="{% url 'view_your_orders' %}">View Orders</a></li>
+                            <!-- <li><a href="#">Product Details</a>
+                                <ul class="dropdown">
+                                    <li><a href="./product-details.html"></a>Orders</li>
+                                    <li><a href="./shop-cart.html">Shop Cart</a></li>
+                                    <li><a href="./checkout.html">Checkout</a></li>
+                                    <li><a href="./blog-details.html">Address Details</a></li>
+                                </ul>
+                            </li> -->
+                            
+                            <!-- <li><a href="./contact.html">Contact</a></li> -->
+                          <li> <a href="{% url 'customerlogout' %}">Logout</a></li> 
+                          <!-- <div class="profile-details" style="display: inline-block; vertical-align: middle; margin-left: 10px;">
+                            <a href="{% url 'customerprofile' %}">
+                                <span class="admin_name" style="font-size: 16px; font-weight: 700; color: black;">Hi {{ user.username }}</span>
+                            </a>
+                        </div> -->
+                            {% else %}
+                            <li><a href="{% url 'customerlogin' %}">Login</a></li> 
+                            <li><a href="{% url 'customer_register' %}">Register</a></li> 
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+
+                <div class="col-lg-3">
+                    <div class="header__right">
+                        <!-- <div class="header__right__auth">
+                            <a href="#">Login</a>
+                            <a href="#">Register</a>
+                        </div> -->
+                        <ul class="header__right__widget">
+                            <!-- <li><span class="icon_search search-switch"></span></li>
+                            <li><a href="#"><span class="icon_heart_alt"></span>
+                                <div class="tip">2</div>
+                            </a></li> -->
+                            {% if user.is_authenticated and request.user.customers %}
+                            <li><a href="{% url 'wishlist' %}"><span class="icon_heart_alt"></span>
+                                <div class="tip">{{ wishlist_count }}</div>
+                            </a></li>
+                            <li><a href="{% url 'cart' %}"><span class="icon_bag_alt"></span>
+                                <div class="tip">{{ cart_count }}</div>
+                            </a></li>
+                            <div class="profile-details" style="display: inline-block; vertical-align: middle; margin-left: 10px;">
+                                <span class="admin_name" style="font-size: 16px; font-weight: 700; color: #010302;">Hi {{user.username}}</span>
+                                <i class='bx bx-chevron-down'></i>
+                                <ul class="dropdown-menu" style="display: none; position: absolute; background-color: #fff; border-radius: 5px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);">
+                                    <li><a class="dropdown-item" href="{% url 'customerprofile' %}" style="padding: 10px 20px; text-decoration: none; color: #333;">Profile</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'order_history' %}" style="padding: 10px 20px; text-decoration: none; color: #333;">View Orders</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'add_address' %}" style="padding: 10px 20px; text-decoration: none; color: #333;">Add Address</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'customerlogout' %}" style="padding: 10px 20px; text-decoration: none; color: #333;">Logout</a></li>
+                                </ul>
+                              </div>
+                            <!-- <div class="profile-details" style="display: inline-block; vertical-align: middle; margin-left: 10px;">
+                                <a href="{% url 'customerprofile' %}">
+                                    <span class="admin_name" style="font-size: 16px; font-weight: 700; color: black;">Hi {{ user.username }}</span>
+                                </a>
+                                
+                            </div> -->
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="canvas__open">
+                <i class="fa fa-bars"></i>
+            </div>
+        </div>
+    </header>
+    <!-- Header Section End -->
+
+    <!-- Orders Section Begin -->
+    <section class="orders-section">
+        <div class="container">
+            <div class="section-title" data-aos="fade-down">
+                <h2>Your Orders</h2>
+                <p>View and track your order history</p>
+            </div>
+            
+            <div class="row">
+                {% if user_orders %}
+                    {% for order in user_orders %}
+                        <div class="col-lg-12" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1|stringformat:'d'}}00">
+                            <div class="order-card">
+                                <div class="order-header">
+                                    <h3>Order #{{ order.id }}</h3>
+                                    <div class="order-date">
+                                        <i class="fa fa-calendar-o"></i> {{ order.created_at|date:"F d, Y" }}
+                                    </div>
+                                </div>
+                                <div class="order-body">
+                                    <div class="order-items">
+                                        {% for item in order.orderitem_set.all %}
+                                            <div class="item-row">
+                                                <div class="item-image">
+                                                    {% if item.product.image %}
+                                                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-fluid">
+                                                    {% else %}
+                                                        <img src="{% static 'shop/img/no-image.png' %}" alt="No image available" class="img-fluid">
+                                                    {% endif %}
+                                                </div>
+                                                <div class="item-details">
+                                                    <div class="item-name">{{ item.product.name }}</div>
+                                                    <div class="item-quantity">Quantity: {{ item.quantity }}</div>
+                                                    <div class="item-price">₹{{ item.price }}</div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="order-footer d-flex justify-content-between align-items-center">
+                                    <div class="total-amount">
+                                        Total: ₹{{ order.total_amount }}
+                                    </div>
+                                    <div class="status-badge status-completed">
+                                        <i class="fa fa-check-circle"></i> Paid
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div class="empty-orders" data-aos="fade-up">
+                            <i class="fa fa-shopping-bag"></i>
+                            <h3>No orders found</h3>
+                            <p>Looks like you haven't made any purchases yet.</p>
+                            <a href="{% url 'shop_index' %}" class="btn btn-primary mt-3">Start Shopping</a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Loading spinner -->
+            <div class="loading-spinner"></div>
+        </div>
+    </section>
+    <!-- Orders Section End -->
+
+    <!-- Footer Section Begin -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 col-md-6 col-sm-7">
+                    <div class="footer__about">
+                        <div class="footer__logo">
+                            <a href="./index.html"><img src="{% static 'shop/img/logo.png' %}" alt=""></a>
+                        </div>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
+                        cilisis.</p>
+                        <div class="footer__payment">
+                            <a href="#"><img src="{% static 'shop/img/payment/payment-1.png' %}" alt=""></a>
+                            <a href="#"><img src="{% static 'shop/img/payment/payment-2.png' %}" alt=""></a>
+                            <a href="#"><img src="{% static 'shop/img/payment/payment-3.png' %}" alt=""></a>
+                            <a href="#"><img src="{% static 'shop/img/payment/payment-4.png' %}" alt=""></a>
+                            <a href="#"><img src="{% static 'shop/img/payment/payment-5.png' %}" alt=""></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-5">
+                    <div class="footer__widget">
+                        <h6>Quick links</h6>
+                        <ul>
+                            <li><a href="#">About</a></li>
+                            <li><a href="#">Blogs</a></li>
+                            <li><a href="#">Contact</a></li>
+                            <li><a href="#">FAQ</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4">
+                    <div class="footer__widget">
+                        <h6>Account</h6>
+                        <ul>
+                            <li><a href="#">My Account</a></li>
+                            <li><a href="#">Orders Tracking</a></li>
+                            <li><a href="#">Checkout</a></li>
+                            <li><a href="#">Wishlist</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-8 col-sm-8">
+                    <div class="footer__newslatter">
+                        <h6>NEWSLETTER</h6>
+                        <form action="#">
+                            <input type="text" placeholder="Email">
+                            <button type="submit" class="site-btn">Subscribe</button>
+                        </form>
+                        <div class="footer__social">
+                            <a href="#"><i class="fa fa-facebook"></i></a>
+                            <a href="#"><i class="fa fa-twitter"></i></a>
+                            <a href="#"><i class="fa fa-youtube-play"></i></a>
+                            <a href="#"><i class="fa fa-instagram"></i></a>
+                            <a href="#"><i class="fa fa-pinterest"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                    <div class="footer_copyright_text">
+                        <p>Copyright &copy; <script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a></p>
+                    </div>
+                    <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Footer Section End -->
+
+    <!-- Search Begin -->
+    <div class="search-model">
+        <div class="h-100 d-flex align-items-center justify-content-center">
+            <div class="search-close-switch">+</div>
+            <form class="search-model-form">
+                <input type="text" id="search-input" placeholder="Search here.....">
+            </form>
+        </div>
+    </div>
+    <!-- Search End -->
+
+    <!-- Js Plugins -->
+    <script src="{% static 'shop/js/jquery-3.3.1.min.js' %}"></script>
+    <script src="{% static 'shop/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'shop/js/jquery.magnific-popup.min.js' %}"></script>
+    <script src="{% static 'shop/js/jquery-ui.min.js' %}    "></script>
+    <script src="{% static 'shop/js/mixitup.min.js' %}"></script>
+    <script src="{% static 'shop/js/jquery.countdown.min.js' %}"></script>
+    <script src="{% static 'shop/js/jquery.slicknav.js' %}"></script>
+    <script src="{% static 'shop/js/owl.carousel.min.js' %}"></script>
+    <script src="{% static 'shop/js/jquery.nicescroll.min.js' %}"></script>
+    <script src="{% static 'shop/js/main.js' %}"></script>
+    <!-- AOS JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+
+        // Show loading spinner when navigating
+        $(window).on('beforeunload', function() {
+            $('.loading-spinner').show();
+        });
+
+        // Hide loading spinner when page is loaded
+        $(window).on('load', function() {
+            $('.loading-spinner').hide();
+        });
+        
+        // Add debug toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const debugMode = false; // Set to true to show debug info
+            if (debugMode) {
+                document.querySelectorAll('.debug-info').forEach(el => {
+                    el.style.display = 'block';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

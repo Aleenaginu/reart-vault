@@ -1,0 +1,940 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Responsive Admin Dashboard | ReArt Vault</title>
+  <link rel="stylesheet" href="{% static 'assets/css/styles.css' %}">
+  <!-- Boxicons CDN Link -->
+  <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    .profile-details .dropdown-menu {
+      display: none;
+    }
+  
+    .profile-details .dropdown-menu.show {
+      display: block;
+    }
+  
+  
+    .profile-details {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+  
+    .profile-details img {
+      height: 40px;
+      width: 40px;
+      border-radius: 50%;
+    }
+  
+    .profile-details .admin_name {
+      margin-left: 10px;
+      font-size: 16px;
+      color: #333;
+    }
+  
+    .profile-details .bx-chevron-down {
+      margin-left: 10px;
+      cursor: pointer;
+    }
+  
+    .profile-details .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 0;
+      background-color: #fff;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+  
+    .profile-details .dropdown-menu li {
+      list-style: none;
+    }
+  
+    .profile-details .dropdown-menu li a {
+      display: block;
+      padding: 10px 20px;
+      text-decoration: none;
+      color: #333;
+      border-bottom: 1px solid #f0f0f0;
+    }
+  
+    .profile-details .dropdown-menu li a:hover {
+      background-color: #f0f0f0;
+    }
+  
+    .profile-details:hover .dropdown-menu {
+      display: block;
+    }
+  
+    .sales-details {
+      display: flex;
+      justify-content: space-around;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      
+    }
+  
+    .details {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      /* Added gap between items */
+    }
+  
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      /* Gap between image and text */
+    }
+  
+    .item-pic {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 10px;
+      transition: transform 0.3s ease;
+    }
+  
+    .item-pic:hover {
+      transform: scale(1.1);
+    }
+  
+    .detail-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      /* Adjust the spacing between list items if needed */
+    }
+  
+    .item-pic {
+      width: 150px;
+      /* Adjust size as needed */
+      height: auto;
+      margin-right: 20px;
+      /* Adjust spacing between image and text */
+    }
+  
+    .item-text {
+      font-weight: bold;
+      font-size: 1.2em;
+      /* Adjust the size as needed */
+      margin-bottom: 5px;
+      /* Space between heading and description */
+    }
+   
+    .form-container {
+      /* background-color: #c9eaee; */
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+  
+    .form-container label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+  
+    .form-container input[type="text"],
+    .form-container textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+      color: #333;
+      transition: border-color 0.3s;
+    }
+  
+    .form-container input[type="text"]:focus,
+    .form-container textarea:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+  
+    .form-container button {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+  
+    .form-container button:hover {
+      background-color: #0056b3;
+    }
+    .form-group {
+  margin-bottom: 15px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+.error-message {
+            display: none; /* Hide error message by default */
+            color: red;
+            font-size: 0.875em;
+}
+
+.sales-boxes {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    width: 80%; /* Adjust the width as needed */
+    max-width: 1200px; /* Optional: limit the maximum width */
+    margin: 0 auto; /* Center the container if width is less than 100% */
+}
+
+        .recent-sales {
+            background-color: rgb(205, 231, 240);
+            padding: 20px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .sales-boxes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .recent-sales.box {
+    width: 100%;
+    max-width: 1000px;
+  }
+  .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+        }
+        .badge {
+    background-color: red;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 50%;
+    font-size: 12px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+/* .btn-block {
+            width: 100%;
+        } */
+  
+    /* Add these styles to the existing style section */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 10% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .close {
+      position: absolute;
+      right: 20px;
+      top: 10px;
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+    }
+    
+    .reviews-container {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 20px;
+    }
+    
+    .review-item {
+      border-bottom: 1px solid #eee;
+      padding: 20px;
+      margin-bottom: 15px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      transition: transform 0.2s ease;
+    }
+    
+    .review-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .review-title {
+      font-weight: bold;
+      font-size: 18px;
+      color: #333;
+    }
+    
+    .review-meta {
+      color: #666;
+      font-size: 14px;
+      font-style: italic;
+    }
+    
+    .review-rating {
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+    
+    .star {
+      color: #ffc107;
+      font-size: 20px;
+      margin-right: 2px;
+    }
+    
+    .review-content {
+      line-height: 1.6;
+      color: #444;
+      font-size: 16px;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      border-left: 3px solid #17a2b8;
+    }
+    
+    .no-reviews {
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+      font-style: italic;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    
+    .modal-content h2 {
+      color: #333;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #17a2b8;
+      text-align: center;
+    }
+    
+    /* Modal animation */
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .modal-content {
+      animation: modalFadeIn 0.3s ease-out;
+    }
+
+    /* Update styles for donation info */
+    .donation-info {
+        background-color: #e9f7fb;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #17a2b8;
+    }
+    
+    .donation-summary h3 {
+        margin-top: 0;
+        color: #17a2b8;
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .donation-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .donation-details p {
+        margin: 5px 0;
+        color: #555;
+    }
+    
+    .donation-rating {
+        background-color: #f8f9fa;
+        padding: 10px 15px;
+        border-radius: 5px;
+        margin-top: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .donation-rating p {
+        margin: 5px 0;
+        font-size: 16px;
+    }
+    
+    .star.half {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .star.half:after {
+        content: '★';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 50%;
+        overflow: hidden;
+        color: #ffc107;
+    }
+
+    /* Additional styles for reviews */
+    .modal-content h3 {
+        color: #333;
+        margin: 20px 0 15px 0;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .review-item {
+        border: 1px solid #eee;
+        padding: 20px;
+        margin-bottom: 15px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: transform 0.2s ease;
+    }
+    
+    .review-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+    }
+    
+    .review-title {
+        font-weight: bold;
+        font-size: 18px;
+        color: #333;
+    }
+    
+    .review-meta {
+        color: #666;
+        font-size: 14px;
+        font-style: italic;
+    }
+    
+    .review-rating {
+        margin-bottom: 12px;
+        font-size: 16px;
+        background-color: #f0f8ff;
+        padding: 5px 10px;
+        border-radius: 5px;
+        display: inline-block;
+    }
+    
+    .review-content {
+        line-height: 1.6;
+        color: #444;
+        font-size: 16px;
+        background-color: #fff;
+        padding: 15px;
+        border-radius: 5px;
+        border-left: 3px solid #17a2b8;
+    }
+  </style>
+  
+</head>
+
+<body>
+  <div class="sidebar">
+    <div class="logo-details">
+      <span class="logo_name" style="font-size: 30px; text-align: center; font-weight: 700; color: #b5c8c1;">ReArt Vault</span>
+    </div>
+    <ul class="nav-links">
+      <li>
+        <a href="{% url 'donor_dashboard' %}" class="active">
+          <i class='bx bx-grid-alt'></i>
+          <span class="links_name">Donors Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'donate_waste' %}">
+          <i class='bx bx-box'></i>
+          <span class="links_name">Add Donations</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'view_donations' %}">
+          <i class='bx bx-list-ul'></i>
+          <span class="links_name">Manage Donations</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'view_rates' %}">
+          <i class='bx bx-pie-chart-alt-2'></i>
+          <span class="links_name">Price Listings</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'donor_notifications' %}">
+          <i class='bx bx-message'></i>
+          <span class="links_name">Notifications</span>
+          {% if unread_count > 0 %}
+          <span class="badge">{{unread_count}}</span>
+          {% endif %}
+        </a>
+      </li>
+      <!-- <li>
+        <a href="#">
+          <i class='bx bx-book-alt'></i>
+          <span class="links_name">Total Items</span>
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <i class='bx bx-message'></i>
+          <span class="links_name">Messages</span>
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <i class='bx bx-message'></i>
+          <span class="links_name">Contact</span>
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <i class='bx bx-heart'></i>
+          <span class="links_name">Favorites</span>
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <i class='bx bx-cog'></i>
+          <span class="links_name">Setting</span>
+        </a>
+      </li> -->
+      <li class="log_out">
+        <a href="{% url 'userlogout' %}">
+          <i class='bx bx-log-out'></i>
+          <span class="links_name">Log out</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <section class="home-section">
+    <nav>
+      <div class="sidebar-button">
+        <i class='bx bx-menu sidebarBtn'></i>
+        <span class="dashboard">Dashboard</span>
+      </div>
+      <div class="search-box">
+        <input type="text" placeholder="Search...">
+        <i class='bx bx-search'></i>
+      </div>
+      <div class="profile-details">
+        <img src="{{donor.profile_pic.url}}" alt="">
+        <span class="admin_name" style="font-size: 25px; font-weight: 900; color: #010302;">Hi {{user.username}}</span>
+        <i class='bx bx-chevron-down'></i>
+        <ul class="dropdown-menu">
+          <li><a href="{% url 'userprofile' %}">View Profile</a></li>
+          <li><a href="{% url 'donor_update' %}">Edit Profile</a></li>
+          <!-- <li><a href="#">Settings</a></li> -->
+          <li><a href="{% url 'userlogout' %}">Logout</a></li>
+        </ul>
+      </div>
+    </nav>
+    <body>
+      <div class="home-content">
+        <div class="overview-boxes">
+          <div class="box" style="background-color:rgb(243, 212, 200);">
+            <div class="right-side">
+              <div class="box-topic">Total Donations</div>
+              <div class="number">{{ total_donations }}</div>
+              <div class="indicator">
+                <!-- <i class='bx bx-up-arrow-alt'></i> -->
+                <!-- <span class="text">Up from yesterday</span> -->
+              </div>
+            </div>
+            <!-- <i class='bx bx-cart-alt cart'></i> -->
+          </div>
+          <div class="box" style="background-color:rgb(188, 233, 188);">
+            <div class="right-side">
+              <div class="box-topic">Accepted Donations</div>
+              <div class="number">{{ approved_donations }}</div>
+              <div class="indicator">
+                <!-- <i class='bx bx-up-arrow-alt'></i> -->
+                <!-- <span class="text">Up from yesterday</span> -->
+              </div>
+            </div>
+            <!-- <i class='bx bxs-cart-add cart two'></i> -->
+          </div>
+          <div class="box" style="background-color:rgb(240, 240, 205);">
+            <div class="right-side">
+              <div class="box-topic">Paid Donations</div>
+              <div class="number"> 0</div>
+              <div class="indicator">
+                <!-- <i class='bx bx-up-arrow-alt'></i> -->
+                <!-- <span class="text">Up from yesterday</span> -->
+              </div>
+            </div>
+            <!-- <i class='bx bx-cart cart three'></i> -->
+          </div>
+          <div class="box" style="background-color:rgb(240, 205, 228);">
+            <div class="right-side">
+              <div class="box-topic">Dispatched Donations</div>
+              <div class="number">0</div>
+              <div class="indicator">
+                <!-- <i class='bx bx-down-arrow-alt down'></i> -->
+                <!-- <span class="text">Down From Today</span> -->
+              </div>
+            </div>
+            <!-- <i class='bx bxs-cart-download cart four'></i> -->
+          </div>
+        </div>
+    
+
+</head>
+<body>
+
+  <div class="sales-boxes">
+    <div class="recent-sales box" style="background-color: rgb(205, 231, 240); padding: 20px; border-radius: 10px; width: 100%; max-width: 1000px;">
+        <div class="title" style="font-size: 24px; font-weight: bold; margin-bottom: 20px;">Notifications</div>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background-color: #ddeff7; text-align: left;">
+                    <th style="padding: 10px; border-bottom: 1px solid #ddd;">Notification</th>
+                    <th style="padding: 10px; border-bottom: 1px solid #ddd;">Status</th>
+                    <th style="padding: 10px; border-bottom: 1px solid #ddd;">Action</th>
+                    <th style="padding: 10px; border-bottom: 1px solid #ddd;">Reviews</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for notification in notifications %}
+                    <tr class="{% if notification.is_read %}read{% else %}unread{% endif %}">
+                        <!-- Notification Message and Date -->
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                            {{ notification.message }} - {{ notification.created_at }}
+                        </td>
+
+                        <!-- Status of Interest Request -->
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                            {% if notification.interest_request %}
+                                {% if notification.interest_request.status == 'accepted' %}
+                                    Accepted
+                                {% elif notification.interest_request.status == 'rejected' %}
+                                    Rejected
+                                {% else %}
+                                    Pending
+                                {% endif %}
+                            {% else %}
+                                No related interest requests found.
+                            {% endif %}
+                        </td>
+
+                        <!-- Action Buttons -->
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                            {% if notification.interest_request and notification.interest_request.status == 'pending' %}
+                                <form method="post" action="{% url 'handle_interest_request' notification.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-approve" name="action" value="accept" style="background-color: #4CAF50; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer;">Accept</button>
+                                    <button type="submit" class="btn-reject" name="action" value="reject" style="background-color: #f44336; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer;">Reject</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Reviews Button -->
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                            {% if notification.interest_request and notification.interest_request.status == 'accepted' %}
+                                <button onclick="viewReviews({{ notification.interest_request.donation.id }})" class="btn-view-reviews" style="background-color: #17a2b8; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer;">
+                                    <i class='bx bx-star'></i> Artist Reviews <span id="review-count-{{ notification.interest_request.donation.id }}" class="review-count"></span>
+                                </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="reviewsModal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="closeReviewsModal">&times;</span>
+    <h2>Artist Reviews for Your Donation</h2>
+    <div id="donationInfo" class="donation-info">
+      <!-- Donation info will be loaded here -->
+    </div>
+    <h3>Reviews from Artists</h3>
+    <div id="reviewsContainer" class="reviews-container">
+      <!-- Reviews will be loaded here -->
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        {% for message in messages %}
+            Swal.fire({
+                icon: '{% if message.tags %}{{ message.tags }}{% else %}info{% endif %}', 
+                title: '{{ message }}',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        {% endfor %}
+        
+        // Set up reviews modal
+        var reviewsModal = document.getElementById("reviewsModal");
+        var closeReviewsModal = document.getElementById("closeReviewsModal");
+        
+        closeReviewsModal.onclick = function() {
+            reviewsModal.style.display = "none";
+        }
+        
+        window.onclick = function(event) {
+            if (event.target == reviewsModal) {
+                reviewsModal.style.display = "none";
+            }
+        }
+        
+        // Debug localStorage on page load
+        debugLocalStorage();
+    });
+    
+    function viewReviews(donationId) {
+        console.log("Viewing reviews for donation ID:", donationId);
+        
+        // Fetch reviews from the server
+        fetch(`{% url "get_donation_reviews" %}?donation_id=${donationId}`)
+          .then(response => response.json())
+          .then(data => {
+            var reviewsContainer = document.getElementById("reviewsContainer");
+            var donationInfo = document.getElementById("donationInfo");
+            var reviewsModal = document.getElementById("reviewsModal");
+            
+            if (data.success) {
+              // Display donation information
+              donationInfo.innerHTML = `
+                <div class="donation-summary">
+                  <h3>${data.donation.description || 'Donation #' + donationId}</h3>
+                  <div class="donation-details">
+                    <p><strong>Medium of Waste:</strong> ${data.donation.medium_name}</p>
+                    <p><strong>Quantity:</strong> ${data.donation.quantity}</p>
+                    <p><strong>Date:</strong> ${data.donation.date}</p>
+                  </div>
+                  <div class="donation-rating">
+                    <p><strong>Overall Rating:</strong> ${data.average_rating}/5 
+                    ${getStarRating(data.average_rating)}</p>
+                    <p><strong>Total Reviews:</strong> ${data.reviews.length}</p>
+                  </div>
+                </div>
+              `;
+              
+              // Display reviews
+              if (data.reviews && data.reviews.length > 0) {
+                var reviewsHTML = '';
+                
+                data.reviews.forEach(function(review) {
+                  var stars = getStarRating(review.rating);
+                  
+                  reviewsHTML += `
+                    <div class="review-item">
+                      <div class="review-header">
+                        <div class="review-title">${review.title}</div>
+                        <div class="review-meta">By ${review.artist_name} on ${review.created_at}</div>
+                      </div>
+                      <div class="review-rating">${stars} ${review.rating}/5</div>
+                      <div class="review-content">${review.content}</div>
+                    </div>
+                  `;
+                });
+                
+                reviewsContainer.innerHTML = reviewsHTML;
+              } else {
+                reviewsContainer.innerHTML = '<div class="no-reviews">No reviews yet for this donation. Artists will submit reviews after using your donated materials.</div>';
+              }
+            } else {
+              // Display error message
+              donationInfo.innerHTML = `
+                <div class="donation-summary">
+                  <h3>Error</h3>
+                  <p>${data.message || 'An error occurred while loading the donation information.'}</p>
+                </div>
+              `;
+              reviewsContainer.innerHTML = '<div class="no-reviews">Unable to load reviews. Please try again later.</div>';
+            }
+            
+            reviewsModal.style.display = "block";
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            var reviewsContainer = document.getElementById("reviewsContainer");
+            var donationInfo = document.getElementById("donationInfo");
+            var reviewsModal = document.getElementById("reviewsModal");
+            
+            donationInfo.innerHTML = `
+              <div class="donation-summary">
+                <h3>Error</h3>
+                <p>An error occurred while loading the donation information.</p>
+              </div>
+            `;
+            reviewsContainer.innerHTML = '<div class="no-reviews">Unable to load reviews. Please try again later.</div>';
+            
+            reviewsModal.style.display = "block";
+          });
+    }
+    
+    // Debug function to check localStorage
+    function debugLocalStorage() {
+        console.log("All localStorage data:");
+        for (var i = 0; i < localStorage.length; i++) {
+            var key = localStorage.key(i);
+            var value = localStorage.getItem(key);
+            console.log(key, ":", value);
+        }
+        
+        var donationReviews = JSON.parse(localStorage.getItem('donationReviews') || '{}');
+        console.log("Donation reviews:", donationReviews);
+        
+        // Log all donation IDs that have reviews
+        console.log("Donation IDs with reviews:");
+        for (var id in donationReviews) {
+            console.log("- Donation ID:", id, "has", donationReviews[id].length, "reviews");
+        }
+    }
+
+    // Update review counts on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateReviewCounts();
+    });
+
+    function updateReviewCounts() {
+        var reviewButtons = document.querySelectorAll('.btn-view-reviews');
+        reviewButtons.forEach(function(button) {
+            var match = button.getAttribute('onclick').match(/viewReviews\((\d+)\)/);
+            if (match && match[1]) {
+                var donationId = match[1];
+                fetch(`{% url "get_review_count" %}?donation_id=${donationId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.count > 0) {
+                            var countElement = document.getElementById('review-count-' + donationId);
+                            if (countElement) {
+                                countElement.textContent = '(' + data.count + ')';
+                                countElement.style.backgroundColor = '#28a745';
+                                countElement.style.color = 'white';
+                                countElement.style.padding = '2px 6px';
+                                countElement.style.borderRadius = '10px';
+                                countElement.style.marginLeft = '5px';
+                                countElement.style.fontSize = '12px';
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        });
+    }
+
+    // Helper function to generate star rating HTML
+    function getStarRating(rating) {
+        var stars = '';
+        var fullStars = Math.floor(rating);
+        var halfStar = rating % 1 >= 0.5;
+        var emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+        
+        // Add full stars
+        for (var i = 0; i < fullStars; i++) {
+            stars += '<span class="star">★</span>';
+        }
+        
+        // Add half star if needed
+        if (halfStar) {
+            stars += '<span class="star half">★</span>';
+        }
+        
+        // Add empty stars
+        for (var i = 0; i < emptyStars; i++) {
+            stars += '<span class="star" style="color: #ccc;">★</span>';
+        }
+        
+        return stars;
+    }
+</script>
