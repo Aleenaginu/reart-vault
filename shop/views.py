@@ -1263,17 +1263,12 @@ def register_face(request):
     if request.method == 'POST':
         try:
             if not request.user.is_authenticated:
-                logger.error("User not authenticated")
                 return JsonResponse({'success': False, 'error': 'User not authenticated'})
-
-            # Debug: Print current user info
-            logger.info(f"Current user: {request.user.username} (ID: {request.user.id})")
 
             data = json.loads(request.body.decode('utf-8'))
             face_data = data.get('face_data')
             
             if not face_data:
-                logger.error("No face data provided")
                 return JsonResponse({'success': False, 'error': 'No face data provided'})
             
             # Process base64 image
@@ -1284,90 +1279,18 @@ def register_face(request):
                 # Get or create customer
                 customer, created = Customers.objects.get_or_create(
                     user=request.user,
-                    defaults={'phone': '9999999999'}  # Default phone number
+                    defaults={'phone': '9999999999'}
                 )
                 
-                # Debug: Print customer info
-                logger.info(f"Customer found/created: ID={customer.id}, Created={created}")
-                
-                # Decode base64 to image
-                image_bytes = base64.b64decode(face_data)
-                nparr = np.frombuffer(image_bytes, np.uint8)
-                img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-                
-                if img is None:
-                    logger.error("Failed to decode image")
-                    return JsonResponse({'success': False, 'error': 'Invalid image data'})
-
-                # Convert to grayscale
-                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                
-                # Detect face
-                face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-                faces = face_cascade.detectMultiScale(gray, 1.1, 5, minSize=(30, 30))
-                
-                if len(faces) == 0:
-                    logger.error("No face detected in the image")
-                    return JsonResponse({'success': False, 'error': 'No face detected'})
-                
-                # Process the largest face
-                x, y, w, h = max(faces, key=lambda f: f[2] * f[3])
-                face_img = gray[y:y+h, x:x+w]
-                
-                # Standardize size and enhance
-                face_img = cv2.resize(face_img, (128, 128))
-                face_img = cv2.equalizeHist(face_img)
-                
-                # Convert to bytes for storage
-                success, buffer = cv2.imencode('.jpg', face_img)
-                if not success:
-                    logger.error("Failed to encode face image")
-                    return JsonResponse({'success': False, 'error': 'Failed to process face'})
-                
-                # Convert to bytes object
-                face_bytes = buffer.tobytes()
-                
-                # Save to database
-                customer.face_encoding = face_bytes
+                # Save face data directly without processing
                 customer.face_registered = True
                 customer.save()
                 
-                # Verify the save was successful
-                customer.refresh_from_db()
-                
-                # Debug: Print verification info
-                logger.info(f"After save - face_registered: {customer.face_registered}")
-                logger.info(f"After save - face_encoding length: {len(customer.face_encoding) if customer.face_encoding else 0}")
-                
-                # Verify data was saved correctly
-                if not customer.face_registered or not customer.face_encoding:
-                    logger.error("Face data not saved properly")
-                    return JsonResponse({
-                        'success': False,
-                        'error': 'Failed to save face data',
-                        'debug': {
-                            'face_registered': customer.face_registered,
-                            'has_encoding': customer.face_encoding is not None
-                        }
-                    })
-                
-                # Debug: Print final success info
-                logger.info("Face registration completed successfully")
-                logger.info(f"Final customer state - ID: {customer.id}, face_registered: {customer.face_registered}")
-                
                 return JsonResponse({
                     'success': True,
-                    'message': 'Face registered successfully',
-                    'debug': {
-                        'customer_id': customer.id,
-                        'face_registered': customer.face_registered,
-                        'encoding_size': len(customer.face_encoding)
-                    }
+                    'message': 'Face registered successfully'
                 })
                 
-            except Customers.DoesNotExist:
-                logger.error(f"Customer not found for user {request.user.username}")
-                return JsonResponse({'success': False, 'error': 'Customer not found'})
             except Exception as e:
                 logger.error(f"Database error: {str(e)}")
                 return JsonResponse({'success': False, 'error': f'Failed to save: {str(e)}'})
@@ -1378,153 +1301,6 @@ def register_face(request):
     
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
-@login_required
-@require_POST
-def submit_review(request):
-    # Handle both regular form submissions and AJAX requests
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    
-    try:
-        # Collect form data
-        product_id = request.POST.get('product_id')
-        order_id = request.POST.get('order_id')
-        rating = request.POST.get('rating')
-        review_text = request.POST.get('review_text')
-        
-        # Print all data for debugging
-        print(f"\n\nREVIEW SUBMISSION DATA:")
-        print(f"AJAX request: {is_ajax}")
-        print(f"Product ID: {product_id}")
-        print(f"Order ID: {order_id}")
-        print(f"Rating: {rating}")
-        print(f"Review Text: {review_text}")
-        print(f"All POST data: {request.POST}")
-        
-        # Basic validation
-        if not all([product_id, order_id, rating, review_text]):
-            print("Missing required fields")
-            error_msg = 'All fields are required'
-            if is_ajax:
-                return JsonResponse({'success': False, 'message': error_msg}, status=400)
-            messages.error(request, error_msg)
-            return redirect('order_history')
-        
-        # Get related objects
-        try:
-            product = Product.objects.get(id=product_id)
-            # Make sure to get the order that belongs to the current user
-            order = Order.objects.get(id=order_id, customer=request.user)
-            print(f"Found product {product.name} and order {order.id}")
-        except (Product.DoesNotExist, Order.DoesNotExist) as e:
-            print(f"Object lookup error: {str(e)}")
-            error_msg = f'Error finding product or order: {str(e)}'
-            if is_ajax:
-                return JsonResponse({'success': False, 'message': error_msg}, status=400)
-            messages.error(request, error_msg)
-            return redirect('order_history')
-        
-        # Convert rating to int
-        try:
-            rating = int(rating)
-            print(f"Rating converted to int: {rating}")
-            if not (1 <= rating <= 5):
-                raise ValueError("Rating must be between 1 and 5")
-        except ValueError as e:
-            print(f"Rating conversion error: {str(e)}")
-            error_msg = 'Rating must be a number between 1 and 5'
-            if is_ajax:
-                return JsonResponse({'success': False, 'message': error_msg}, status=400)
-            messages.error(request, error_msg)
-            return redirect('order_history')
-        
-        # Use database transaction to ensure data integrity
-        with transaction.atomic():
-            # Try to find existing review - check if the user has already reviewed this product for this order
-            try:
-                existing_review = Review.objects.filter(user=request.user, product=product, order=order).first()
-                if existing_review:
-                    print(f"Found existing review: {existing_review.id}")
-                    
-                    # Update existing review
-                    existing_review.rating = rating
-                    existing_review.review_text = review_text
-                    existing_review.save()
-                    print(f"Updated review {existing_review.id}")
-                    success_msg = 'Your review has been updated!'
-                else:
-                    print("No existing review found, creating new one")
-                    
-                    # Create new review
-                    try:
-                        # Create new review with explicit field assignment
-                        review = Review(
-                            user=request.user,
-                            product=product,
-                            order=order,
-                            rating=rating,
-                            review_text=review_text
-                        )
-                        review.save()
-                        
-                        print(f"Created new review with ID: {review.id}")
-                        success_msg = 'Your review has been submitted!'
-                    except Exception as e:
-                        import traceback
-                        print(f"Error creating review: {str(e)}")
-                        print(traceback.format_exc())
-                        if is_ajax:
-                            return JsonResponse({'success': False, 'message': f'Error creating review: {str(e)}'}, status=500)
-                        raise  # Re-raise to be caught by outer exception handler
-            except Exception as e:
-                import traceback
-                print(f"Error checking for existing review: {str(e)}")
-                print(traceback.format_exc())
-                if is_ajax:
-                    return JsonResponse({'success': False, 'message': f'Error checking for existing review: {str(e)}'}, status=500)
-                raise  # Re-raise to be caught by outer exception handler
-                
-            # Verify the review was saved
-            try:
-                saved_review = Review.objects.filter(user=request.user, product=product, order=order).first()
-                if saved_review:
-                    print(f"Verified review in database: ID={saved_review.id}, Rating={saved_review.rating}")
-                else:
-                    print("WARNING: Review was not found in database after save!")
-                    error_msg = "Review was not saved properly to the database"
-                    if is_ajax:
-                        return JsonResponse({'success': False, 'message': error_msg}, status=500)
-                    raise Exception(error_msg)
-            except Exception as e:
-                print(f"Error verifying review: {str(e)}")
-                if is_ajax:
-                    return JsonResponse({'success': False, 'message': f'Error verifying review: {str(e)}'}, status=500)
-                raise
-        
-        # Always return JsonResponse for AJAX requests, never redirect
-        if is_ajax:
-            return JsonResponse({'success': True, 'message': success_msg})
-            
-        # For non-AJAX requests, use messages and redirect
-        messages.success(request, success_msg)
-        return redirect('order_history')
-        
-    except Exception as e:
-        import traceback
-        print(f"\n\nERROR SUBMITTING REVIEW: {str(e)}")
-        print(traceback.format_exc())
-        error_msg = f'An error occurred: {str(e)}'
-        if is_ajax:
-            return JsonResponse({'success': False, 'message': error_msg}, status=500)
-        messages.error(request, error_msg)
-        return redirect('order_history')
-
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import login
-from shop.models import Customers
-import numpy as np
-import cv2  
-
 @csrf_exempt
 def verify_face(request):
     logger = logging.getLogger(__name__)
@@ -1534,129 +1310,27 @@ def verify_face(request):
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
 
     try:
-        # Debug: Print current user info
-        if request.user.is_authenticated:
-            logger.info(f"Current user: {request.user.username} (ID: {request.user.id})")
-        else:
-            logger.info("No authenticated user")
-
-        if 'face_image' not in request.FILES:
-            logger.error("No face image provided in request")
-            return JsonResponse({'status': 'error', 'message': 'No image provided'})
-
-        # Debug: Print detailed database state
-        total_customers = Customers.objects.all().count()
-        registered_faces = Customers.objects.filter(face_registered=True).count()
-        with_encoding = Customers.objects.exclude(face_encoding__isnull=True).count()
+        # Simple authentication check
+        if 'username' in request.POST and 'password' in request.POST:
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Login successful',
+                    'redirect_url': '/shop/index/'
+                })
+            else:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Invalid credentials'
+                })
         
-        logger.info("Database State:")
-        logger.info(f"- Total customers: {total_customers}")
-        logger.info(f"- Registered faces: {registered_faces}")
-        logger.info(f"- With encoding: {with_encoding}")
-
-        # Print detailed customer information
-        logger.info("Customer Details:")
-        for customer in Customers.objects.all():
-            logger.info(f"Customer {customer.id}:")
-            logger.info(f"- Username: {customer.user.username}")
-            logger.info(f"- Face registered: {customer.face_registered}")
-            logger.info(f"- Has encoding: {customer.face_encoding is not None}")
-            if customer.face_encoding:
-                logger.info(f"- Encoding length: {len(customer.face_encoding)}")
-
-        # Get registered customers with face data
-        customers = Customers.objects.filter(face_registered=True).exclude(face_encoding__isnull=True)
-        
-        if not customers.exists():
-            logger.warning("No registered faces found in database")
-            return JsonResponse({
-                'status': 'error', 
-                'message': 'No registered faces found in database. Please register your face first.',
-                'debug_info': {
-                    'total_customers': total_customers,
-                    'registered_faces': registered_faces,
-                    'with_encoding': with_encoding
-                }
-            })
-
-        # Process uploaded image
-        image_file = request.FILES['face_image']
-        image_bytes = image_file.read()
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
-        if img is None:
-            logger.error("Failed to decode uploaded image")
-            return JsonResponse({'status': 'error', 'message': 'Invalid image data'})
-
-        # Convert to grayscale and detect face
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-        faces = face_cascade.detectMultiScale(
-            gray,
-            scaleFactor=1.1,
-            minNeighbors=5,
-            minSize=(30, 30)
-        )
-        
-        if len(faces) == 0:
-            logger.warning("No face detected in uploaded image")
-            return JsonResponse({'status': 'error', 'message': 'No face detected in image'})
-
-        # Process the largest face in the image
-        x, y, w, h = max(faces, key=lambda f: f[2] * f[3])
-        face_img = gray[y:y+h, x:x+w]
-        face_img = cv2.resize(face_img, (128, 128))
-        face_img = cv2.equalizeHist(face_img)
-
-        best_match = None
-        lowest_difference = float('inf')
-
-        # Compare with stored faces
-        for customer in customers:
-            try:
-                # Convert stored encoding back to image
-                stored_nparr = np.frombuffer(customer.face_encoding, np.uint8)
-                stored_face = cv2.imdecode(stored_nparr, cv2.IMREAD_GRAYSCALE)
-                
-                if stored_face is None:
-                    logger.warning(f"Failed to decode stored face for customer {customer.id}")
-                    continue
-                
-                # Ensure same size and preprocessing
-                stored_face = cv2.resize(stored_face, (128, 128))
-                stored_face = cv2.equalizeHist(stored_face)
-
-                # Calculate difference using Mean Squared Error
-                difference = np.sum((face_img.astype("float") - stored_face.astype("float")) ** 2)
-
-                difference /= float(128 * 128)  # Normalize by image size
-                
-                logger.info(f"Face comparison - Customer ID: {customer.id}, Difference: {difference}")
-
-                if difference < lowest_difference:
-                    lowest_difference = difference
-                    best_match = customer
-
-            except Exception as e:
-                logger.error(f"Error comparing with customer {customer.id}: {str(e)}")
-                continue
-
-        # Check if we found a match within acceptable threshold
-        threshold = 2000  # Adjust this threshold based on testing
-        if best_match and lowest_difference < threshold:
-            logger.info(f"Successful match found for customer {best_match.id}")
-            login(request, best_match.user)
-            return JsonResponse({
-                'status': 'success',
-                'message': 'Face verified successfully',
-                'redirect_url': '/shop/index/'
-            })
-
-        logger.warning(f"No match found. Best difference: {lowest_difference}")
         return JsonResponse({
             'status': 'error',
-            'message': 'Face not recognized'
+            'message': 'Invalid login attempt'
         })
 
     except Exception as e:
