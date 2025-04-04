@@ -30,7 +30,6 @@ from django.views.decorators.cache import never_cache
 from django.core.files.base import ContentFile
 import logging
 import json
-import cv2
 import time
 
 logger = logging.getLogger(__name__)
