@@ -11,9 +11,7 @@ from datetime import timedelta
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
 from cart.models import Cart, CartItem
-from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from category.models import Category
 from .models import Customers, Order, OrderItem, Payment, ShippingAddress, Wishlist, Review
@@ -23,61 +21,15 @@ import logging
 from django.db.models import Prefetch
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseForbidden
-from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse
 import json
-import logging
-from artist.models import ProNotification
-from cart.models import CartItem
-import razorpay
-import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from django.db.models import Q
-from django.shortcuts import render
-from .models import Product
-from category.models import Category  
 from accounts.models import Artist, ArtistAddress
-from django.utils import timezone
-from datetime import timedelta
 from delivery.models import DeliveryOrder
-import cv2
-import numpy as np
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.core.files.storage import default_storage
-import base64
-import io
-from PIL import Image
-from .models import Customers
-from django.contrib.auth import login
-import logging
+import razorpay
+from django.conf import settings
+import google.generativeai as genai
 
 logger = logging.getLogger(__name__)
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
-from django.http import HttpResponse, JsonResponse
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.cache import never_cache
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
-from django.contrib import messages
-from django.http import JsonResponse
-from django.urls import reverse
-from django.utils import timezone
-from datetime import timedelta
-from django.views.decorators.csrf import csrf_exempt
-from django.db import transaction
-from cart.models import Cart, CartItem
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404
-from category.models import Category
-from .models import Customers, Order, OrderItem, Payment, ShippingAddress, Wishlist, Review
-from artist.models import ProNotification, Product
-
-from django.views.decorators.http import require_http_methods
-from django.core.exceptions import PermissionDenied
 
 # Create your views here.
 
