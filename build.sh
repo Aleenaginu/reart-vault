@@ -5,9 +5,9 @@ set -o errexit
 # Install Python dependencies
 pip install --upgrade pip
 
-# Install face recognition dependencies from pre-built wheels
-pip install --no-cache-dir cmake
-pip install --no-cache-dir dlib-binary
+# Install face recognition dependencies using specific versions
+pip install --no-cache-dir numpy==1.24.3
+pip install --no-cache-dir "dlib @ https://github.com/jloh02/dlib/releases/download/v19.24/dlib-19.24.0-cp311-cp311-linux_x86_64.whl"
 pip install --no-cache-dir face-recognition
 
 # Install other dependencies
