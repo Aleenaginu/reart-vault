@@ -36,14 +36,14 @@ urlpatterns = [
     path('search/', views.search_products, name='search_products'),
     path('validate-aadhaar/', views.validate_aadhaar, name='validate_aadhaar'),
     
-    # Chatbot API endpoint - must be before slug patterns
+    # Chatbot API endpoint
     path('api/reart_gemini_chat_endpoint/', views.gemini_chat_api, name='gemini_chat_api'),
     
     # Web socket endpoint
     path('ws/track/<int:order_id>/', tracking_ws.tracking_handler.handle_request, name='order_tracking_ws'),
     path('submit_review/', views.submit_review, name='submit_review'),
     
-    # Category and product detail pages - keep these last
+    # Category and product detail pages
     path('<slug:category_slug>/', views.shop_index, name='product_by_category'),
     path('<slug:category_slug>/<slug:product_slug>/', views.product_detail, name='product_detail'),
 ]
