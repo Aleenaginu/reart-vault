@@ -31,8 +31,7 @@ SECRET_KEY = 'django-insecure-ah(=!6a-hveva1elgo7npxy$k#&^nirroc4zoyqms@d6#73leq
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 SITE_ID = 1
-ALLOWED_HOSTS = ["127.0.0.1","miniproject-2-reart-vault.onrender.com"]
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'reart-vault-169p.onrender.com']
 
 
 # Application definition
