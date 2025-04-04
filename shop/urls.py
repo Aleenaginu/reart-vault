@@ -34,8 +34,6 @@ urlpatterns = [
     path('wishlist/add_to_cart/<int:product_id>/', views.add_to_cart_from_wishlist, name='add_to_cart_from_wishlist'),
     path('track-orders/',views.track_order_status,name='track_order_status'),
     path('search/', views.search_products, name='search_products'),
-    path('face_auth/verify/', views.verify_face, name='verify_face'),
-    path('face_auth/register/', views.register_face, name='register_face'),
     path('validate-aadhaar/', views.validate_aadhaar, name='validate_aadhaar'),
     
     # Chatbot API endpoint - must be before slug patterns
