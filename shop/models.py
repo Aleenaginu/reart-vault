@@ -7,11 +7,10 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Customers(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    phone = models.IntegerField(default=9999999999)
-    profile_pic = models.ImageField(upload_to='picture/customer', null =True, default='picture/customer/hi.jpg')
-    face_encoding = models.TextField(null=True, blank=False)
-    face_registered = models.BooleanField(default=False)
-    
+    phone = models.CharField(max_length=10)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
         return self.user.username
     
