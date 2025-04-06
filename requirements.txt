@@ -118,3 +118,4 @@ wsproto==1.2.0
 xhtml2pdf==0.2.15
 xlsxwriter
 google.generativeai
+cv2
