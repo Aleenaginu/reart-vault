@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 
+# Empty URL patterns - face recognition has been disabled
 urlpatterns = [
-    path('store/', views.store_face, name='store_face'),
-    
+    path('dummy/', views.dummy_view, name='dummy_view'),
 ]
