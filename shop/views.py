@@ -1302,7 +1302,145 @@ def validate_aadhaar(request):
         except Exception as e:
             return JsonResponse({'valid': False, 'message': str(e)})
     return JsonResponse({'valid': False, 'message': 'Invalid request method'})
-
+@login_required
+@require_POST
+def submit_review(request):
+    # Handle both regular form submissions and AJAX requests
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    
+    try:
+        # Collect form data
+        product_id = request.POST.get('product_id')
+        order_id = request.POST.get('order_id')
+        rating = request.POST.get('rating')
+        review_text = request.POST.get('review_text')
+        
+        # Print all data for debugging
+        print(f"\n\nREVIEW SUBMISSION DATA:")
+        print(f"AJAX request: {is_ajax}")
+        print(f"Product ID: {product_id}")
+        print(f"Order ID: {order_id}")
+        print(f"Rating: {rating}")
+        print(f"Review Text: {review_text}")
+        print(f"All POST data: {request.POST}")
+        
+        # Basic validation
+        if not all([product_id, order_id, rating, review_text]):
+            print("Missing required fields")
+            error_msg = 'All fields are required'
+            if is_ajax:
+                return JsonResponse({'success': False, 'message': error_msg}, status=400)
+            messages.error(request, error_msg)
+            return redirect('order_history')
+        
+        # Get related objects
+        try:
+            product = Product.objects.get(id=product_id)
+            # Make sure to get the order that belongs to the current user
+            order = Order.objects.get(id=order_id, customer=request.user)
+            print(f"Found product {product.name} and order {order.id}")
+        except (Product.DoesNotExist, Order.DoesNotExist) as e:
+            print(f"Object lookup error: {str(e)}")
+            error_msg = f'Error finding product or order: {str(e)}'
+            if is_ajax:
+                return JsonResponse({'success': False, 'message': error_msg}, status=400)
+            messages.error(request, error_msg)
+            return redirect('order_history')
+        
+        # Convert rating to int
+        try:
+            rating = int(rating)
+            print(f"Rating converted to int: {rating}")
+            if not (1 <= rating <= 5):
+                raise ValueError("Rating must be between 1 and 5")
+        except ValueError as e:
+            print(f"Rating conversion error: {str(e)}")
+            error_msg = 'Rating must be a number between 1 and 5'
+            if is_ajax:
+                return JsonResponse({'success': False, 'message': error_msg}, status=400)
+            messages.error(request, error_msg)
+            return redirect('order_history')
+        
+        # Use database transaction to ensure data integrity
+        with transaction.atomic():
+            # Try to find existing review - check if the user has already reviewed this product for this order
+            try:
+                existing_review = Review.objects.filter(user=request.user, product=product, order=order).first()
+                if existing_review:
+                    print(f"Found existing review: {existing_review.id}")
+                    
+                    # Update existing review
+                    existing_review.rating = rating
+                    existing_review.review_text = review_text
+                    existing_review.save()
+                    print(f"Updated review {existing_review.id}")
+                    success_msg = 'Your review has been updated!'
+                else:
+                    print("No existing review found, creating new one")
+                    
+                    # Create new review
+                    try:
+                        # Create new review with explicit field assignment
+                        review = Review(
+                            user=request.user,
+                            product=product,
+                            order=order,
+                            rating=rating,
+                            review_text=review_text
+                        )
+                        review.save()
+                        
+                        print(f"Created new review with ID: {review.id}")
+                        success_msg = 'Your review has been submitted!'
+                    except Exception as e:
+                        import traceback
+                        print(f"Error creating review: {str(e)}")
+                        print(traceback.format_exc())
+                        if is_ajax:
+                            return JsonResponse({'success': False, 'message': f'Error creating review: {str(e)}'}, status=500)
+                        raise  # Re-raise to be caught by outer exception handler
+            except Exception as e:
+                import traceback
+                print(f"Error checking for existing review: {str(e)}")
+                print(traceback.format_exc())
+                if is_ajax:
+                    return JsonResponse({'success': False, 'message': f'Error checking for existing review: {str(e)}'}, status=500)
+                raise  # Re-raise to be caught by outer exception handler
+                
+            # Verify the review was saved
+            try:
+                saved_review = Review.objects.filter(user=request.user, product=product, order=order).first()
+                if saved_review:
+                    print(f"Verified review in database: ID={saved_review.id}, Rating={saved_review.rating}")
+                else:
+                    print("WARNING: Review was not found in database after save!")
+                    error_msg = "Review was not saved properly to the database"
+                    if is_ajax:
+                        return JsonResponse({'success': False, 'message': error_msg}, status=500)
+                    raise Exception(error_msg)
+            except Exception as e:
+                print(f"Error verifying review: {str(e)}")
+                if is_ajax:
+                    return JsonResponse({'success': False, 'message': f'Error verifying review: {str(e)}'}, status=500)
+                raise
+        
+        # Always return JsonResponse for AJAX requests, never redirect
+        if is_ajax:
+            return JsonResponse({'success': True, 'message': success_msg})
+            
+        # For non-AJAX requests, use messages and redirect
+        messages.success(request, success_msg)
+        return redirect('order_history')
+        
+    except Exception as e:
+        import traceback
+        print(f"\n\nERROR SUBMITTING REVIEW: {str(e)}")
+        print(traceback.format_exc())
+        error_msg = f'An error occurred: {str(e)}'
+        if is_ajax:
+            return JsonResponse({'success': False, 'message': error_msg}, status=500)
+        messages.error(request, error_msg)
+        return redirect('order_history')
 # Gemini Chatbot API
 import google.generativeai as genai
 from django.conf import settings
