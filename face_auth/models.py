@@ -3,6 +3,9 @@ from django.conf import settings
 import numpy as np
 import json
 
+# Placeholder file - models have been removed
+# This file exists only to prevent import errors
+
 # Create your models here.
 
 class FaceEncoding(models.Model):
